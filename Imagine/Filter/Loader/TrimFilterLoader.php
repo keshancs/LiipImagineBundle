@@ -2,9 +2,9 @@
 
 namespace Liip\ImagineBundle\Imagine\Filter\Loader;
 
-use Imagine\Gmagick\Image;
-use Liip\ImagineBundle\Imagine\Filter\Loader\LoaderInterface;
 use Imagine\Image\ImageInterface;
+use Liip\ImagineBundle\Imagine\Filter\Loader\LoaderInterface;
+use Liip\ImagineBundle\Imagine\Filter\Trim;
 
 /**
  * Class TrimFilterLoader
