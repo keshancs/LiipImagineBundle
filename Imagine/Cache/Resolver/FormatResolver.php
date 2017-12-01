@@ -3,6 +3,7 @@
 namespace Liip\ImagineBundle\Imagine\Cache\Resolver;
 
 use Liip\ImagineBundle\Binary\BinaryInterface;
+use Liip\ImagineBundle\Imagine\Filter\FilterManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Routing\RequestContext;
 
@@ -13,7 +14,7 @@ use Symfony\Component\Routing\RequestContext;
  * @package   Liip\ImagineBundle\Imagine\Cache\Resolver
  * @author    Mihail Savluga
  */
-class FormatCacheResolver implements ResolverInterface
+class FormatResolver implements ResolverInterface
 {
     /**
      * @var Filesystem
@@ -35,16 +36,23 @@ class FormatCacheResolver implements ResolverInterface
     protected $cachePrefix;
 
     /**
-     * @param Filesystem $filesystem
+     * @var FilterManager
+     */
+    private $filterManager;
+
+    /**
+     * @param Filesystem     $filesystem
      * @param RequestContext $requestContext
-     * @param string $webRootDir
-     * @param string $cachePrefix
+     * @param string         $webRootDir
+     * @param string         $cachePrefix
+     * @param FilterManager  $filterManager
      */
     public function __construct(
         Filesystem $filesystem,
         RequestContext $requestContext,
         $webRootDir,
-        $cachePrefix = 'media/cache'
+        $cachePrefix = 'media/cache',
+        FilterManager $filterManager
     ) {
         $this->filesystem = $filesystem;
         $this->requestContext = $requestContext;
@@ -52,6 +60,7 @@ class FormatCacheResolver implements ResolverInterface
         $this->webRoot = rtrim(str_replace('//', '/', $webRootDir), '/');
         $this->cachePrefix = ltrim(str_replace('//', '/', $cachePrefix), '/');
         $this->cacheRoot = $this->webRoot.'/'.$this->cachePrefix;
+        $this->filterManager = $filterManager;
     }
 
     /**
@@ -116,7 +125,7 @@ class FormatCacheResolver implements ResolverInterface
      */
     protected function getFilePath($path, $filter)
     {
-        return $this->webRoot.'/'.$this->getFileUrl($path, $filter);
+        return $this->webRoot.'/'.$this->getFileUrl($this->replaceImageFileExtension($path, $filter), $filter);
     }
 
     /**
@@ -124,7 +133,7 @@ class FormatCacheResolver implements ResolverInterface
      */
     protected function getFileUrl($path, $filter)
     {
-        return $this->cachePrefix.'/'.$filter.'/'.ltrim($path, '/');
+        return $this->cachePrefix.'/'.$filter.'/'.ltrim($this->replaceImageFileExtension($path, $filter), '/');
     }
 
     /**
@@ -157,16 +166,25 @@ class FormatCacheResolver implements ResolverInterface
 
     /**
      * @param $path
+     * @param $filter
      *
      * @return mixed
      */
-    protected function replaceImagePathExtension($path)
+    protected function replaceImageFileExtension($path, $filter)
     {
-        if (!is_null($this->format)) {
-            $path = preg_replace('/\.[^.]+$/', $this->format, $path);
+        $newExtension = $this->getImageFormat($filter);
+        if (!is_null($newExtension)) {
+            $path = preg_replace('/\.[^.]+$/', '.' . $newExtension, $path);
         }
 
         return $path;
     }
 
+    protected function getImageFormat($filterName)
+    {
+        $filterConfig = $this->filterManager->getFilterConfiguration();
+        $currentFilterConfig = $filterConfig->get($filterName);
+
+        return $currentFilterConfig['format'];
+    }
 }
