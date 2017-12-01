@@ -2,7 +2,6 @@
 
 namespace Liip\ImagineBundle\Imagine\Cache\Resolver;
 
-use Liip\ImagineBundle\Binary\BinaryInterface;
 use Liip\ImagineBundle\Imagine\Filter\FilterManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Routing\RequestContext;
@@ -14,31 +13,12 @@ use Symfony\Component\Routing\RequestContext;
  * @package   Liip\ImagineBundle\Imagine\Cache\Resolver
  * @author    Mihail Savluga
  */
-class FormatResolver implements ResolverInterface
+class FormatResolver extends WebPathResolver
 {
-    /**
-     * @var Filesystem
-     */
-    protected $filesystem;
-
-    /**
-     * @var RequestContext
-     */
-    protected $requestContext;
-
-    /**
-     * @var string
-     */
-    protected $webRoot;
-    /**
-     * @var string
-     */
-    protected $cachePrefix;
-
     /**
      * @var FilterManager
      */
-    private $filterManager;
+    protected $filterManager;
 
     /**
      * @param Filesystem     $filesystem
@@ -54,70 +34,9 @@ class FormatResolver implements ResolverInterface
         $cachePrefix = 'media/cache',
         FilterManager $filterManager
     ) {
-        $this->filesystem = $filesystem;
-        $this->requestContext = $requestContext;
+        parent::__construct($filesystem, $requestContext, $webRootDir, $cachePrefix);
 
-        $this->webRoot = rtrim(str_replace('//', '/', $webRootDir), '/');
-        $this->cachePrefix = ltrim(str_replace('//', '/', $cachePrefix), '/');
-        $this->cacheRoot = $this->webRoot.'/'.$this->cachePrefix;
         $this->filterManager = $filterManager;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function resolve($path, $filter)
-    {
-        return sprintf('%s/%s',
-            $this->getBaseUrl(),
-            $this->getFileUrl($path, $filter)
-        );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function isStored($path, $filter)
-    {
-        return $this->filesystem->exists($this->getFilePath($path, $filter));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function store(BinaryInterface $binary, $path, $filter)
-    {
-        $this->filesystem->dumpFile(
-            $this->getFilePath($path, $filter),
-            $binary->getContent()
-        );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function remove(array $paths, array $filters)
-    {
-        if (empty($paths) && empty($filters)) {
-            return;
-        }
-
-        if (empty($paths)) {
-            $filtersCacheDir = array();
-            foreach ($filters as $filter) {
-                $filtersCacheDir[] = $this->cacheRoot.'/'.$filter;
-            }
-
-            $this->filesystem->remove($filtersCacheDir);
-
-            return;
-        }
-
-        foreach ($paths as $path) {
-            foreach ($filters as $filter) {
-                $this->filesystem->remove($this->getFilePath($path, $filter));
-            }
-        }
     }
 
     /**
@@ -137,36 +56,10 @@ class FormatResolver implements ResolverInterface
     }
 
     /**
-     * @return string
-     */
-    protected function getBaseUrl()
-    {
-        $port = '';
-        if ('https' == $this->requestContext->getScheme() && $this->requestContext->getHttpsPort() != 443) {
-            $port =  ":{$this->requestContext->getHttpsPort()}";
-        }
-
-        if ('http' == $this->requestContext->getScheme() && $this->requestContext->getHttpPort() != 80) {
-            $port =  ":{$this->requestContext->getHttpPort()}";
-        }
-
-        $baseUrl = $this->requestContext->getBaseUrl();
-        if ('.php' == substr($this->requestContext->getBaseUrl(), -4)) {
-            $baseUrl = pathinfo($this->requestContext->getBaseurl(), PATHINFO_DIRNAME);
-        }
-        $baseUrl = rtrim($baseUrl, '/\\');
-
-        return sprintf('%s://%s%s%s',
-            $this->requestContext->getScheme(),
-            $this->requestContext->getHost(),
-            $port,
-            $baseUrl
-        );
-    }
-
-    /**
-     * @param $path
-     * @param $filter
+     * Replaces original image file extension to conversion format extension
+     *
+     * @param string $path
+     * @param string $filter
      *
      * @return mixed
      */
@@ -180,6 +73,13 @@ class FormatResolver implements ResolverInterface
         return $path;
     }
 
+    /**
+     * Returns image conversion format
+     *
+     * @param $filterName
+     *
+     * @return mixed
+     */
     protected function getImageFormat($filterName)
     {
         $filterConfig = $this->filterManager->getFilterConfiguration();
