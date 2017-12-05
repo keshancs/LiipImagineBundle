@@ -8,7 +8,7 @@ use Liip\ImagineBundle\Imagine\Filter\FilterManager;
 
 /**
  * Class CacheWarmer
- * 
+ *
  * @author Konstantin Tjuterev <kostik.lv@gmail.com>
  */
 class CacheWarmer
@@ -139,8 +139,8 @@ class CacheWarmer
                         $warmerName
                     )
                 );
-                $this->warmPaths($paths, $filters, $force);
-                $warmer->setWarmed($paths);
+                $warmedPaths = $this->warmPaths($paths, $filters, $force);
+                $warmer->setWarmed($warmedPaths);
                 $last += $this->chunkSize;
             }
             $this->log(sprintf('Finished processing warmer "%s"', $warmerName));
@@ -182,8 +182,16 @@ class CacheWarmer
         return $warmers;
     }
 
+    /**
+     * @param array $paths
+     * @param array $filters
+     * @param bool  $force
+     *
+     * @return array
+     */
     protected function warmPaths($paths, $filters, $force)
     {
+        $successfulWarmedPaths = [];
         foreach ($paths as $pathData) {
             $aPath = $pathData['path'];
             $binaries = array();
@@ -193,21 +201,31 @@ class CacheWarmer
                 if ($force || !$this->cacheManager->isStored($aPath, $filter)) {
                     // this is to avoid loading binary with the same loader for multiple filters
                     $loader = $this->dataManager->getLoader($filter);
-                    $hash = spl_object_hash($loader);
-                    if (!isset($binaries[$hash])) {
-                        // if NotLoadable is thrown - it will just bubble up
-                        // everything returned by Warmer should be loadable
-                        $binaries[$hash] =  $this->dataManager->find($filter, $aPath);
-                    }
 
-                    $this->cacheManager->store(
-                        $this->filterManager->applyFilter($binaries[$hash], $filter),
-                        $aPath,
-                        $filter
-                    );
+                    try {
+                        $hash = spl_object_hash($loader);
+                        if (!isset($binaries[$hash])) {
+                            // if NotLoadable is thrown - it will just bubble up
+                            // everything returned by Warmer should be loadable
+                            $binaries[$hash] = $this->dataManager->find($filter, $aPath);
+                        }
+                        $this->cacheManager->store(
+                            $this->filterManager->applyFilter($binaries[$hash], $filter),
+                            $aPath,
+                            $filter
+                        );
+
+                        $successfulWarmedPaths[] = $pathData;
+                    } catch (\RuntimeException $e) {
+                        $message = sprintf('Unable to warm cache for filter "%s", due to - "%s"',
+                            $filter, $e->getMessage());
+                        $this->log($message, 'error');
+                    }
                 }
             }
         }
+
+        return $successfulWarmedPaths;
     }
 
     protected function log($message, $type = 'info')
