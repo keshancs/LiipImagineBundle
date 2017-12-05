@@ -111,7 +111,6 @@ class CacheWarmer
         }
 
         foreach ($filtersByWarmer as $warmerName => $filters) {
-            $last = 0;
             if (isset($selectedWarmers) && !empty($selectedWarmers) && !in_array($warmerName, $selectedWarmers)) {
                 $this->log(
                     sprintf(
@@ -129,19 +128,20 @@ class CacheWarmer
             }
 
             $this->log(sprintf('Processing warmer "%s"', $warmerName));
+            $start = 0;
             $warmer = $this->warmers[$warmerName];
-            while ($paths = $warmer->getPaths($last, $this->chunkSize)) {
+            while ($paths = $warmer->getPaths($start, $this->chunkSize)) {
                 $this->log(
                     sprintf(
                         'Processing chunk %d - %d for warmer "%s"',
-                        $last,
-                        $last + $this->chunkSize,
+                        $start,
+                        $start + $this->chunkSize,
                         $warmerName
                     )
                 );
                 $warmedPaths = $this->warmPaths($paths, $filters, $force);
                 $warmer->setWarmed($warmedPaths);
-                $last += $this->chunkSize;
+                $start += count($paths) - count($warmedPaths);
             }
             $this->log(sprintf('Finished processing warmer "%s"', $warmerName));
         }
