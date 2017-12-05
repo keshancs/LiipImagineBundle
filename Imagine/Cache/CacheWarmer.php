@@ -198,9 +198,11 @@ class CacheWarmer
             foreach ($filters as $filter) {
                 $this->log(sprintf('Warming up path "%s" for filter "%s"', $aPath, $filter));
 
-                if ($force || !$this->cacheManager->isStored($aPath, $filter)) {
+                $isStored = $this->cacheManager->isStored($aPath, $filter);
+                if ($force || !$isStored) {
                     // this is to avoid loading binary with the same loader for multiple filters
-                    $loader = $this->dataManager->getLoader($filter);
+                    $loader   = $this->dataManager->getLoader($filter);
+                    $isStored = false;
 
                     try {
                         $hash = spl_object_hash($loader);
@@ -215,12 +217,16 @@ class CacheWarmer
                             $filter
                         );
 
-                        $successfulWarmedPaths[] = $pathData;
+                        $isStored = true;
                     } catch (\RuntimeException $e) {
                         $message = sprintf('Unable to warm cache for filter "%s", due to - "%s"',
                             $filter, $e->getMessage());
                         $this->log($message, 'error');
                     }
+                }
+
+                if ($isStored) {
+                    $successfulWarmedPaths[] = $pathData;
                 }
             }
         }
