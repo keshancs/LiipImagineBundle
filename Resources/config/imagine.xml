@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <container xmlns="http://symfony.com/schema/dic/services"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
 
@@ -71,11 +71,18 @@
         <!-- Post processors' classes -->
         <parameter key="liip_imagine.filter.post_processor.jpegoptim.class">Liip\ImagineBundle\Imagine\Filter\PostProcessor\JpegOptimPostProcessor</parameter>
         <parameter key="liip_imagine.filter.post_processor.imagemin.class">Liip\ImagineBundle\Imagine\Filter\PostProcessor\ImageMinPostProcessor</parameter>
-        <parameter key="liip_imagine.filter.post_processor.pngquant.class">Liip\ImagineBundle\Imagine\Filter\PostProcessor\PngquantPostProcessor</parameter>
 
         <parameter key="liip_imagine.jpegoptim.binary">/usr/bin/jpegoptim</parameter>
         <parameter key="liip_imagine.imagemin.binary">/usr/local/bin/imagemin</parameter>
+
+        <parameter key="liip_imagine.filter.post_processor.pngquant.class">Liip\ImagineBundle\Imagine\Filter\PostProcessor\PngquantPostProcessor</parameter>
         <parameter key="liip_imagine.pngquant.binary">/usr/bin/pngquant</parameter>
+
+        <parameter key="liip_imagine.filter.post_processor.optipng.class">Liip\ImagineBundle\Imagine\Filter\PostProcessor\OptiPngPostProcessor</parameter>
+        <parameter key="liip_imagine.optipng.binary">/usr/bin/optipng</parameter>
+        <parameter key="liip_imagine.optipng.level">7</parameter>
+        <parameter key="liip_imagine.optipng.stripAll">true</parameter>
+        <parameter key="liip_imagine.optipng.tempDir">null</parameter>
 
     </parameters>
 
@@ -256,17 +263,17 @@
         <!-- Guessers -->
 
         <service
-                id="liip_imagine.mime_type_guesser"
-                class="Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface"
-                factory-class="Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser"
-                factory-method="getInstance"
+            id="liip_imagine.mime_type_guesser"
+            class="Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface"
+            factory-class="Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser"
+            factory-method="getInstance"
         />
 
         <service
-                id="liip_imagine.extension_guesser"
-                class="Symfony\Component\HttpFoundation\File\MimeType\ExtensionGuesserInterface"
-                factory-class="Symfony\Component\HttpFoundation\File\MimeType\ExtensionGuesser"
-                factory-method="getInstance"
+            id="liip_imagine.extension_guesser"
+            class="Symfony\Component\HttpFoundation\File\MimeType\ExtensionGuesserInterface"
+            factory-class="Symfony\Component\HttpFoundation\File\MimeType\ExtensionGuesser"
+            factory-method="getInstance"
         />
 
         <service id="liip_imagine.binary.mime_type_guesser" class="%liip_imagine.binary.mime_type_guesser.class%">
@@ -301,6 +308,14 @@
         <service id="liip_imagine.filter.post_processor.pngquant" class="%liip_imagine.filter.post_processor.pngquant.class%">
             <argument>%liip_imagine.pngquant.binary%</argument>
             <tag name="liip_imagine.filter.post_processor" post_processor="pngquant" />
+        </service>
+
+        <service id="liip_imagine.filter.post_processor.optipng" class="%liip_imagine.filter.post_processor.optipng.class%">
+            <argument>%liip_imagine.optipng.binary%</argument>
+            <argument>%liip_imagine.optipng.level%</argument>
+            <argument>%liip_imagine.optipng.stripAll%</argument>
+            <argument>%liip_imagine.optipng.tempDir%</argument>
+            <tag name="liip_imagine.filter.post_processor" post_processor="optipng" />
         </service>
     </services>
 </container>
