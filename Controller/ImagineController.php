@@ -3,6 +3,7 @@
 namespace Liip\ImagineBundle\Controller;
 
 use Imagine\Exception\RuntimeException;
+use Liip\ImagineBundle\Binary\BinaryInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Liip\ImagineBundle\Imagine\Data\DataManager;
 use Liip\ImagineBundle\Imagine\Filter\FilterManager;
@@ -80,8 +81,10 @@ class ImagineController
                     throw new NotFoundHttpException('Source image could not be found', $e);
                 }
 
+                $imageBinary = $this->isSvg($binary) ? $binary : $this->filterManager->applyFilter($binary, $filter);
+
                 $this->cacheManager->store(
-                    $this->filterManager->applyFilter($binary, $filter),
+                    $imageBinary,
                     $path,
                     $filter
                 );
@@ -192,5 +195,15 @@ class ImagineController
         } catch (RuntimeException $e) {
             throw new \RuntimeException(sprintf('Unable to create image for path "%s" and filter "%s". Message was "%s"', $hash.'/'.$path, $filter, $e->getMessage()), 0, $e);
         }
+    }
+
+    /**
+     * @param BinaryInterface $binary
+     *
+     * @return bool
+     */
+    protected function isSvg(BinaryInterface $binary)
+    {
+        return $binary->getMimeType() == 'image/svg+xml';
     }
 }
