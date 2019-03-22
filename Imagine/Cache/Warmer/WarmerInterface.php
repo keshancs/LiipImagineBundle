@@ -36,6 +36,18 @@ interface WarmerInterface
     function setWarmed($data);
 
     /**
+     * The return value of getPatsh is passed back to this method to allow marking failed paths - those which were not loadable
+     * 
+     * The method is called for every chunk processed during warmup if there were any failed paths
+     * Path is considered failed only if the source image was not found (NotLoadabale exception)
+     * 
+     * @param $data
+     * 
+     * @return void
+     */
+    function setFailed($data);
+
+    /**
      * Clears warmed-up state of path(s) or all images
      *
      * @param $paths mixed If null - warmed state for all images should be cleared, if string or array - corresponding paths should be cleared

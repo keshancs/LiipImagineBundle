@@ -2,6 +2,7 @@
 
 namespace Liip\ImagineBundle\Imagine\Cache;
 
+use Liip\ImagineBundle\Exception\Binary\Loader\NotLoadableException;
 use Liip\ImagineBundle\Imagine\Cache\Warmer\WarmerInterface;
 use Liip\ImagineBundle\Imagine\Data\DataManager;
 use Liip\ImagineBundle\Imagine\Filter\FilterManager;
@@ -139,8 +140,11 @@ class CacheWarmer
                         $warmerName
                     )
                 );
-                $warmedPaths = $this->warmPaths($paths, $filters, $force);
-                $warmer->setWarmed($warmedPaths);
+                $processedPaths = $this->warmPaths($paths, $filters, $force);
+                $warmer->setWarmed($processedPaths['success']);
+                if ($processedPaths['failed']) {
+                    $warmer->setFailed($processedPaths['failed']);
+                }
                 $start += count($paths) - count($warmedPaths);
             }
             $this->log(sprintf('Finished processing warmer "%s"', $warmerName));
@@ -192,6 +196,7 @@ class CacheWarmer
     protected function warmPaths($paths, $filters, $force)
     {
         $successfulWarmedPaths = [];
+        $failedPaths = [];
         foreach ($paths as $pathData) {
             $aPath = $pathData['path'];
             $binaries = array();
@@ -218,6 +223,11 @@ class CacheWarmer
                         );
 
                         $isStored = true;
+                    } catch (NotLoadableException $e) {
+                        $message = sprintf('Unable to warm cache for filter "%s", due to - "%s" - will mark as failed',
+                            $filter, $e->getMessage());
+                        $this->log($message, 'error');
+                        $failedPaths[] = $pathData;
                     } catch (\RuntimeException $e) {
                         $message = sprintf('Unable to warm cache for filter "%s", due to - "%s"',
                             $filter, $e->getMessage());
@@ -231,7 +241,7 @@ class CacheWarmer
             }
         }
 
-        return $successfulWarmedPaths;
+        return ['success' => $successfulWarmedPaths, 'failed' => $failedPaths];
     }
 
     protected function log($message, $type = 'info')
