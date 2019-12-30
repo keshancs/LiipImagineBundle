@@ -42,6 +42,8 @@
         <parameter key="liip_imagine.filter.loader.background.class">Liip\ImagineBundle\Imagine\Filter\Loader\BackgroundFilterLoader</parameter>
         <parameter key="liip_imagine.filter.loader.upscale.class">Liip\ImagineBundle\Imagine\Filter\Loader\UpscaleFilterLoader</parameter>
         <parameter key="liip_imagine.filter.loader.auto_rotate.class">Liip\ImagineBundle\Imagine\Filter\Loader\AutoRotateFilterLoader</parameter>
+        <parameter key="liip_imagine.filter.loader.rotate.class">Liip\ImagineBundle\Imagine\Filter\Loader\RotateFilterLoader</parameter>
+        <parameter key="liip_imagine.filter.loader.interlace.class">Liip\ImagineBundle\Imagine\Filter\Loader\InterlaceFilterLoader</parameter>
 
         <!-- Data loaders' classes -->
 
@@ -114,6 +116,7 @@
             <argument type="service" id="liip_imagine.filter.manager" />
             <argument type="service" id="liip_imagine.cache.manager" />
             <argument type="service" id="liip_imagine.cache.signer" />
+            <argument type="service" id="logger" on-invalid="ignore" />
         </service>
 
         <service id="liip_imagine.meta_data.reader" class="%liip_imagine.meta_data.reader.class%" public="false" />
@@ -187,6 +190,14 @@
             <tag name="liip_imagine.filter.loader" loader="auto_rotate" />
         </service>
 
+        <service id="liip_imagine.filter.loader.rotate" class="%liip_imagine.filter.loader.rotate.class%">
+            <tag name="liip_imagine.filter.loader" loader="rotate" />
+        </service>
+
+        <service id="liip_imagine.filter.loader.interlace" class="%liip_imagine.filter.loader.interlace.class%">
+            <tag name="liip_imagine.filter.loader" loader="interlace" />
+        </service>
+
         <!-- Data loaders -->
 
         <service id="liip_imagine.binary.loader.prototype.filesystem" class="%liip_imagine.binary.loader.filesystem.class%">
@@ -210,6 +221,7 @@
         </service>
 
         <service id="liip_imagine.cache.resolver.prototype.aws_s3" class="%liip_imagine.cache.resolver.aws_s3.class%" public="true" abstract="true">
+            <argument><!-- will be injected by AwsS3ResolverFactory --></argument>
             <argument><!-- will be injected by AwsS3ResolverFactory --></argument>
             <argument><!-- will be injected by AwsS3ResolverFactory --></argument>
             <argument><!-- will be injected by AwsS3ResolverFactory --></argument>

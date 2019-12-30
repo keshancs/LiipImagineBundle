@@ -1,5 +1,6 @@
 <?php
-namespace Liip\ImagineBundle\Tests\Functional\Imagine;
+
+namespace Liip\ImagineBundle\Tests\Functional\Imagine\Filter;
 
 use Liip\ImagineBundle\Tests\Functional\WebTestCase;
 

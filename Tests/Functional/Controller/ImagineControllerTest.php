@@ -1,4 +1,5 @@
 <?php
+
 namespace Liip\ImagineBundle\Tests\Functional\Controller;
 
 use Liip\ImagineBundle\Tests\Functional\WebTestCase;
@@ -34,7 +35,7 @@ class ImagineControllerTest extends WebTestCase
         $this->webRoot = self::$kernel->getContainer()->getParameter('kernel.root_dir').'/web';
         $this->cacheRoot = $this->webRoot.'/media/cache';
 
-        $this->filesystem = new Filesystem;
+        $this->filesystem = new Filesystem();
         $this->filesystem->remove($this->cacheRoot);
     }
 
@@ -87,9 +88,21 @@ class ImagineControllerTest extends WebTestCase
     {
         $this->client->request('GET', '/media/cache/resolve/thumbnail_web_path/rc/invalidHash/images/cats.jpeg?'.http_build_query(array(
             'filters' => array(
-                'thumbnail' => array('size' => array(50, 50))
+                'thumbnail' => array('size' => array(50, 50)),
             ),
             '_hash' => 'invalid',
+        )));
+    }
+
+    /**
+     * @expectedException \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     * @expectedExceptionMessage Filters must be an array. Value was "some-string"
+     */
+    public function testShouldThrowNotFoundHttpExceptionIfFiltersNotArray()
+    {
+        $this->client->request('GET', '/media/cache/resolve/thumbnail_web_path/rc/invalidHash/images/cats.jpeg?'.http_build_query(array(
+            'filters' => 'some-string',
+            '_hash'   => 'hash',
         )));
     }
 
@@ -102,6 +115,14 @@ class ImagineControllerTest extends WebTestCase
         $this->client->request('GET', '/media/cache/resolve/thumbnail_web_path/images/shrodinger_cats_which_not_exist.jpeg');
     }
 
+    /**
+     * @expectedException \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    public function testInvalidFilterShouldThrowNotFoundHttpException()
+    {
+        $this->client->request('GET', '/media/cache/resolve/invalid-filter/images/cats.jpeg');
+    }
+
     public function testShouldResolveWithCustomFiltersPopulatingCacheFirst()
     {
         /** @var Signer $signer */
@@ -109,7 +130,7 @@ class ImagineControllerTest extends WebTestCase
 
         $params = array(
             'filters' => array(
-                'thumbnail' => array('size' => array(50, 50))
+                'thumbnail' => array('size' => array(50, 50)),
             ),
         );
 
@@ -142,7 +163,7 @@ class ImagineControllerTest extends WebTestCase
 
         $params = array(
             'filters' => array(
-                'thumbnail' => array('size' => array(50, 50))
+                'thumbnail' => array('size' => array(50, 50)),
             ),
         );
 

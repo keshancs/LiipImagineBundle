@@ -37,7 +37,7 @@ class ImagineExtension extends \Twig_Extension
      *
      * @param string $path
      * @param string $filter
-     * @param array $runtimeConfig
+     * @param array  $runtimeConfig
      *
      * @return \Twig_Markup
      */

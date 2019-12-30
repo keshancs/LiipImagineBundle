@@ -7,6 +7,7 @@ use Liip\ImagineBundle\DependencyInjection\Factory\Resolver\WebPathResolverFacto
 use Liip\ImagineBundle\Tests\AbstractTest;
 use Liip\ImagineBundle\DependencyInjection\LiipImagineExtension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Yaml\Parser;
 
@@ -45,6 +46,7 @@ class LiipImagineExtensionTest extends AbstractTest
                 new Reference('liip_imagine.filter.manager'),
                 new Reference('liip_imagine.cache.manager'),
                 new Reference('liip_imagine.cache.signer'),
+                new Reference('logger', ContainerInterface::IGNORE_ON_INVALID_REFERENCE),
             )
         );
     }
@@ -67,8 +69,8 @@ class LiipImagineExtensionTest extends AbstractTest
     {
         $this->containerBuilder = new ContainerBuilder();
         $loader = new LiipImagineExtension();
-        $loader->addLoaderFactory(new FileSystemLoaderFactory);
-        $loader->addResolverFactory(new WebPathResolverFactory);
+        $loader->addLoaderFactory(new FileSystemLoaderFactory());
+        $loader->addResolverFactory(new WebPathResolverFactory());
         $loader->load(array(array()), $this->containerBuilder);
         $this->assertTrue($this->containerBuilder instanceof ContainerBuilder);
     }
@@ -80,8 +82,8 @@ class LiipImagineExtensionTest extends AbstractTest
     {
         $this->containerBuilder = new ContainerBuilder();
         $loader = new LiipImagineExtension();
-        $loader->addLoaderFactory(new FileSystemLoaderFactory);
-        $loader->addResolverFactory(new WebPathResolverFactory);
+        $loader->addLoaderFactory(new FileSystemLoaderFactory());
+        $loader->addResolverFactory(new WebPathResolverFactory());
         $loader->load(array($this->getFullConfig()), $this->containerBuilder);
         $this->assertTrue($this->containerBuilder instanceof ContainerBuilder);
     }

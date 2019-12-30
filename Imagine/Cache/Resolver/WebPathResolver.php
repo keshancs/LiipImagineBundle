@@ -28,10 +28,10 @@ class WebPathResolver implements ResolverInterface
     protected $cachePrefix;
 
     /**
-     * @param Filesystem $filesystem
+     * @param Filesystem     $filesystem
      * @param RequestContext $requestContext
-     * @param string $webRootDir
-     * @param string $cachePrefix
+     * @param string         $webRootDir
+     * @param string         $cachePrefix
      */
     public function __construct(
         Filesystem $filesystem,
@@ -117,6 +117,9 @@ class WebPathResolver implements ResolverInterface
      */
     protected function getFileUrl($path, $filter)
     {
+        // crude way of sanitizing URL scheme ("protocol") part
+        $path = str_replace('://', '---', $path);
+
         return $this->cachePrefix.'/'.$filter.'/'.ltrim($path, '/');
     }
 

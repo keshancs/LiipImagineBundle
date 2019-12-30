@@ -8,7 +8,6 @@ use Liip\ImagineBundle\Imagine\Filter\FilterConfiguration;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\Event;
 use Liip\ImagineBundle\ImagineEvents;
 use Liip\ImagineBundle\Events\CacheResolveEvent;
 
@@ -52,11 +51,11 @@ class CacheManager
     /**
      * Constructs the cache manager to handle Resolvers based on the provided FilterConfiguration.
      *
-     * @param FilterConfiguration $filterConfig
-     * @param RouterInterface $router
-     * @param SignerInterface $signer
+     * @param FilterConfiguration      $filterConfig
+     * @param RouterInterface          $router
+     * @param SignerInterface          $signer
      * @param EventDispatcherInterface $dispatcher
-     * @param string $defaultResolver
+     * @param string                   $defaultResolver
      */
     public function __construct(
         FilterConfiguration $filterConfig,
@@ -75,10 +74,8 @@ class CacheManager
     /**
      * Adds a resolver to handle cached images for the given filter.
      *
-     * @param string $filter
+     * @param string            $filter
      * @param ResolverInterface $resolver
-     *
-     * @return void
      */
     public function addResolver($filter, ResolverInterface $resolver)
     {
@@ -133,9 +130,9 @@ class CacheManager
      * Gets filtered path for rendering in the browser.
      * It could be the cached one or an url of filter action.
      *
-     * @param string $path The path where the resolved file is expected.
+     * @param string $path          The path where the resolved file is expected.
      * @param string $filter
-     * @param array $runtimeConfig
+     * @param array  $runtimeConfig
      *
      * @return string
      */
@@ -157,7 +154,7 @@ class CacheManager
     }
 
     /**
-     * Get path to runtime config image
+     * Get path to runtime config image.
      *
      * @param string $path
      * @param array  $runtimeConfig
@@ -170,9 +167,9 @@ class CacheManager
     /**
      * Returns a web accessible URL.
      *
-     * @param string $path The path where the resolved file is expected.
-     * @param string $filter The name of the imagine filter in effect.
-     * @param array $runtimeConfig
+     * @param string $path          The path where the resolved file is expected.
+     * @param string $filter        The name of the imagine filter in effect.
+     * @param array  $runtimeConfig
      *
      * @return string
      */
@@ -180,7 +177,7 @@ class CacheManager
     {
         $params = array(
             'path' => ltrim($path, '/'),
-            'filter' => $filter
+            'filter' => $filter,
         );
 
         if (empty($runtimeConfig)) {
@@ -250,8 +247,6 @@ class CacheManager
     /**
      * @param string|string[]|null $paths
      * @param string|string[]|null $filters
-     *
-     * @return void
      */
     public function remove($paths = null, $filters = null)
     {

@@ -22,7 +22,7 @@ class Configuration implements ConfigurationInterface
 
     /**
      * @param ResolverFactoryInterface[] $resolversFactories
-     * @param LoaderFactoryInterface[] $loadersFactories
+     * @param LoaderFactoryInterface[]   $loadersFactories
      */
     public function __construct(array $resolversFactories, array $loadersFactories)
     {
@@ -99,7 +99,7 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->scalarNode('driver')->defaultValue('gd')
                     ->validate()
-                        ->ifTrue(function($v) { return !in_array($v, array('gd', 'imagick', 'gmagick')); })
+                        ->ifTrue(function ($v) { return !in_array($v, array('gd', 'imagick', 'gmagick')); })
                         ->thenInvalid('Invalid imagine driver specified: %s')
                     ->end()
                 ->end()
@@ -120,6 +120,9 @@ class Configuration implements ConfigurationInterface
                         ->fixXmlConfig('filter', 'filters')
                         ->children()
                             ->scalarNode('quality')->defaultValue(100)->end()
+                            ->scalarNode('jpeg_quality')->defaultNull()->end()
+                            ->scalarNode('png_compression_level')->defaultNull()->end()
+                            ->scalarNode('png_compression_filter')->defaultNull()->end()
                             ->scalarNode('format')->defaultNull()->end()
                             ->booleanNode('animated')->defaultFalse()->end()
                             ->scalarNode('cache')->defaultNull()->end()
